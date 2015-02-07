@@ -14,18 +14,18 @@
                 $code = $this->getInput('code');
                 if (!empty($code)) {
                     $client   = new Webservice();
-                    $response = Webservice::post('http://indieauth.com/auth', array(
+                    $response = Webservice::post('https://indieauth.com/auth', array(
                         'code'         => $code,
-                        'redirect_uri' => \Idno\Core\site()->config()->getURL(),
+                        'redirect_uri' => \Idno\Core\site()->config()->getURL().'indieauth/callback',
                         'client_id'    => \Idno\Core\site()->config()->getURL()
                     ));
                     if ($response['response'] == 200) {
                         parse_str($response['content'], $content);
-                        if (!empty($content['me']) && parse_url($content['me'], PHP_URL_HOST) == parse_url(\Idno\Core\site()->config()->getURL, PHP_URL_HOST)) {
-                            $user                 = \Idno\Core\site()->session()->currentUser();
+                        if (!empty($content['me']) && parse_url($content['me'], PHP_URL_HOST) == parse_url(\Idno\Core\site()->config()->getURL(), PHP_URL_HOST)) {
                             $user->indieauth_code = $code;
                             $user->save();
                             \Idno\Core\site()->session()->logUserOn($user);
+                            $this->forward();
                         } else {
                             \Idno\Core\site()->session()->addMessage("Couldn't log you in: the token hostname didn't match.");
                         }
